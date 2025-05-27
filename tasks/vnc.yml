@@ -49,6 +49,7 @@
     content: |
       [Unit]
       Description=Start TigerVNC server at startup for display %i
+      After=network.target
       [Service]
       Type=forking
       User={{ vnc_user }}

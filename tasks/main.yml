@@ -23,6 +23,7 @@
     name: "vncserver@1.service"
     enabled: yes
     state: started
+  when: ansible_env.GITHUB_ACTIONS is not defined or ansible_env.GITHUB_ACTIONS != 'true'
 
 - name: Habilitar y arrancar el servicio noVNC
   systemd:

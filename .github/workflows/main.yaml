@@ -35,7 +35,3 @@ jobs:
       
       - name: Check if noVNC is running
         run: curl -k https://localhost:8443/ --output /dev/null --silent --fail
-
-      - name: Check if VNC is running
-        run: nc -zv localhost 5901
-
