@@ -62,7 +62,7 @@
     content: |
       [Unit]
       Description=noVNC Web Client
-      After=network.target vncserver.service
+      After=network.target
       [Service]
       Type=simple
       ExecStart=/usr/local/bin/start_novnc.sh

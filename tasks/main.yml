@@ -18,9 +18,9 @@
   systemd:
     daemon_reload: yes
 
-- name: Habilitar y arrancar el servicio VNC
+- name: Activar y habilitar vncserver@1.service
   systemd:
-    name: vncserver.service
+    name: "vncserver@1.service"
     enabled: yes
     state: started
 
