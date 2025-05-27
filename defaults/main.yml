@@ -5,3 +5,5 @@ vnc_password: "vncpassword"
 novnc_ssl_cert_path: /etc/ssl/novnc/novnc.pem
 novnc_ssl_key_path: /etc/ssl/novnc/novnc.key
 novnc_https_port: 8443
+start_vncserver: true
+start_novnc: true

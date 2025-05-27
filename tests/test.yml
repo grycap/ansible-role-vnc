@@ -1,4 +1,5 @@
 ---
 - hosts: localhost
   roles:
-    - ansible-role-vnc
+    - role: ansible-role-vnc
+      start_vncserver: false
