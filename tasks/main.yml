@@ -23,6 +23,7 @@
     name: "vncserver@1.service"
     enabled: yes
     state: started
+  ignore_errors: yes
   when: start_vncserver
 
 - name: Habilitar y arrancar el servicio noVNC
