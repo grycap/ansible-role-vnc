@@ -1,0 +1,62 @@
+- name: Crear usuario para VNC
+  user:
+    name: "{{ vnc_user }}"
+    shell: /bin/bash
+    create_home: yes
+    home: "/opt/{{ vnc_user }}"
+    state: present
+
+- name: Crear directorio .vnc para el usuario
+  file:
+    path: "/opt/{{ vnc_user }}/.vnc"
+    state: directory
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    mode: '0700'
+
+- name: Crear archivo de contraseña VNC
+  shell: echo '{{ vnc_password }}' | vncpasswd -f > /opt/{{ vnc_user }}/.vnc/passwd
+  args:
+    creates: "/opt/{{ vnc_user }}/.vnc/passwd"
+  become_user: "{{ vnc_user }}"
+
+- name: Crear archivo .vnc/xstartup con XFCE
+  copy:
+    dest: "/opt/{{ vnc_user }}/.vnc/xstartup"
+    content: |
+      #!/bin/sh
+      unset SESSION_MANAGER
+      unset DBUS_SESSION_BUS_ADDRESS
+      exec startxfce4
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    mode: '0755'
+
+- name: Establecer permisos seguros para el archivo passwd
+  file:
+    path: "/opt/{{ vnc_user }}/.vnc/passwd"
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    mode: '0600'
+
+- name: Habilitar linger para que systemd ejecute servicios del usuario
+  command: loginctl enable-linger {{ vnc_user }}
+
+- name: Crear unidad systemd vncserver@.service
+  copy:
+    dest: /etc/systemd/system/vncserver@.service
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Start TigerVNC server at startup for display %i
+      After=network.target
+      [Service]
+      Type=forking
+      User={{ vnc_user }}
+      PAMName=login
+      PIDFile=/opt/{{ vnc_user }}/.vnc/%H:%i.pid
+      ExecStart=/usr/bin/vncserver :%i
+      ExecStop=/usr/bin/vncserver -kill :%i
+      Restart=on-failure
+      [Install]
+      WantedBy=multi-user.target

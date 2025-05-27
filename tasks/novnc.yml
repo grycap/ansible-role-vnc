@@ -1,0 +1,73 @@
+- name: Clonar noVNC
+  git:
+    repo: https://github.com/novnc/noVNC.git
+    dest: /opt/noVNC
+    update: no
+
+- name: Clonar websockify dentro de noVNC
+  git:
+    repo: https://github.com/novnc/websockify.git
+    dest: /opt/noVNC/websockify
+    update: no
+
+- name: Crear script para iniciar noVNC
+  copy:
+    dest: /usr/local/bin/start_novnc.sh
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      /opt/noVNC/utils/novnc_proxy \
+        --vnc localhost:5901 \
+        --listen {{ novnc_https_port }} \
+        --cert {{ novnc_ssl_cert_path }} \
+        --key {{ novnc_ssl_key_path }} \
+        --ssl-only
+
+- name: Set correct permissions for the noVNC directory
+  file:
+    path: /opt/noVNC
+    state: directory
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    recurse: yes
+
+- name: Crear directorio para certificados SSL de noVNC
+  file:
+    path: /etc/ssl/novnc
+    state: directory
+    mode: '0755'
+
+- name: Generar certificado autofirmado para noVNC
+  command: >
+    openssl req -x509 -nodes -days 365
+    -subj "/C=XX/ST=XX/L=XX/O=XX/CN=novnc"
+    -newkey rsa:2048
+    -keyout {{ novnc_ssl_key_path }}
+    -out {{ novnc_ssl_cert_path }}
+  args:
+    creates: "{{ novnc_ssl_cert_path }}"
+
+- name: Crear directorio para certificados SSL de noVNC
+  file:
+    path: /etc/ssl/novnc
+    state: directory
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    recursive: yes
+
+- name: Crear servicio systemd para noVNC
+  copy:
+    dest: /etc/systemd/system/novnc.service
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=noVNC Web Client
+      After=network.target vncserver.service
+      [Service]
+      Type=simple
+      ExecStart=/usr/local/bin/start_novnc.sh
+      Restart=on-failure
+      User={{ vnc_user }}
+      WorkingDirectory=/opt/noVNC
+      [Install]
+      WantedBy=multi-user.target

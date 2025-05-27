@@ -1,0 +1,31 @@
+
+- name: Include {{ansible_distribution}} tasks
+  include_tasks: "{{ansible_distribution}}.yml"
+  when: ansible_distribution ==  'Ubuntu'
+
+- name: Fail if the distribution is not supported
+  fail:
+    msg: "This playbook only supports Ubuntu. Detected distribution: {{ ansible_distribution }}"
+  when: ansible_distribution != 'Ubuntu'
+
+- name: Include vnc tasks
+  include_tasks: "vnc.yml"
+
+- name: Include novnc tasks
+  include_tasks: "novnc.yml"
+
+- name: Reload systemd to recognize new services
+  systemd:
+    daemon_reload: yes
+
+- name: Habilitar y arrancar el servicio VNC
+  systemd:
+    name: vncserver.service
+    enabled: yes
+    state: started
+
+- name: Habilitar y arrancar el servicio noVNC
+  systemd:
+    name: novnc.service
+    enabled: yes
+    state: started
