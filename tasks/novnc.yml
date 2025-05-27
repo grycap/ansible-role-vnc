@@ -53,7 +53,7 @@
     state: directory
     owner: "{{ vnc_user }}"
     group: "{{ vnc_user }}"
-    recursive: yes
+    recurse: yes
 
 - name: Crear servicio systemd para noVNC
   copy:
