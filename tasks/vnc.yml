@@ -44,3 +44,4 @@
   become_user: "{{ vnc_user }}"
   args:
     creates: "/home/{{ vnc_user }}/.vnc/$(hostname):1.pid"
+  when: start_vnc_server
