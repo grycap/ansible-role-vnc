@@ -42,6 +42,7 @@
 - name: Launch VNC server for user
   command: /usr/bin/vncserver :1
   become_user: "{{ vnc_user }}"
+  become: true
   args:
     creates: "/home/{{ vnc_user }}/.vnc/$(hostname):1.pid"
   when: start_vnc_server
