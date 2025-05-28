@@ -1,28 +1,28 @@
-- name: Crear usuario para VNC
+- name: Create VNC user
   user:
     name: "{{ vnc_user }}"
     shell: /bin/bash
     create_home: yes
-    home: "/opt/{{ vnc_user }}"
+    home: "/home/{{ vnc_user }}"
     state: present
 
-- name: Crear directorio .vnc para el usuario
+- name: Create .vnc directory for VNC user
   file:
-    path: "/opt/{{ vnc_user }}/.vnc"
+    path: "/home/{{ vnc_user }}/.vnc"
     state: directory
     owner: "{{ vnc_user }}"
     group: "{{ vnc_user }}"
     mode: '0700'
 
-- name: Crear archivo de contraseña VNC
-  shell: echo '{{ vnc_password }}' | vncpasswd -f > /opt/{{ vnc_user }}/.vnc/passwd
+- name: Create VNC password file
+  shell: echo '{{ vnc_password }}' | vncpasswd -f > /home/{{ vnc_user }}/.vnc/passwd
   args:
-    creates: "/opt/{{ vnc_user }}/.vnc/passwd"
+    creates: "/home/{{ vnc_user }}/.vnc/passwd"
   become_user: "{{ vnc_user }}"
 
-- name: Crear archivo .vnc/xstartup con XFCE
+- name: Create .vnc/xstartup to XFCE
   copy:
-    dest: "/opt/{{ vnc_user }}/.vnc/xstartup"
+    dest: "/home/{{ vnc_user }}/.vnc/xstartup"
     content: |
       #!/bin/sh
       unset SESSION_MANAGER
@@ -32,31 +32,16 @@
     group: "{{ vnc_user }}"
     mode: '0755'
 
-- name: Establecer permisos seguros para el archivo passwd
+- name: Set permissions for VNC password file
   file:
-    path: "/opt/{{ vnc_user }}/.vnc/passwd"
+    path: "/home/{{ vnc_user }}/.vnc/passwd"
     owner: "{{ vnc_user }}"
     group: "{{ vnc_user }}"
     mode: '0600'
 
-- name: Habilitar linger para que systemd ejecute servicios del usuario
-  command: loginctl enable-linger {{ vnc_user }}
-
-- name: Crear unidad systemd vncserver@.service
-  copy:
-    dest: /etc/systemd/system/vncserver@.service
-    mode: '0644'
-    content: |
-      [Unit]
-      Description=Start TigerVNC server at startup for display %i
-      After=network.target
-      [Service]
-      Type=forking
-      User={{ vnc_user }}
-      PAMName=login
-      PIDFile=/opt/{{ vnc_user }}/.vnc/%H:%i.pid
-      ExecStart=/usr/bin/vncserver :%i
-      ExecStop=/usr/bin/vncserver -kill :%i
-      Restart=on-failure
-      [Install]
-      WantedBy=multi-user.target
+- name: Launch VNC server for user
+  command: /usr/bin/vncserver :1
+  become_user: "{{ vnc_user }}"
+  args:
+    creates: "/home/{{ vnc_user }}/.vnc/$(hostname):1.pid"
+  when: start_vnc_server

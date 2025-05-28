@@ -13,19 +13,3 @@
 
 - name: Include novnc tasks
   include_tasks: "novnc.yml"
-
-- name: Reload systemd to recognize new services
-  systemd:
-    daemon_reload: yes
-
-- name: Habilitar y arrancar el servicio VNC
-  systemd:
-    name: vncserver.service
-    enabled: yes
-    state: started
-
-- name: Habilitar y arrancar el servicio noVNC
-  systemd:
-    name: novnc.service
-    enabled: yes
-    state: started
