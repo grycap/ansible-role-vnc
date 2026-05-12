@@ -2,6 +2,7 @@
   apt:
     name:
       - tigervnc-standalone-server
+      - tigervnc-tools
       - git
       - python3-websockify
       - xfce4
