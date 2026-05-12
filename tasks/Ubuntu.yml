@@ -7,3 +7,4 @@
       - xfce4
       - xfce4-goodies
       - dbus-x11
+    install_recommends: no
