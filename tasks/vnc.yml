@@ -39,10 +39,19 @@
     group: "{{ vnc_user }}"
     mode: '0600'
 
+- name: Check active VNC sessions for user
+  command: /usr/bin/vncserver -list
+  become_user: "{{ vnc_user }}"
+  become: true
+  register: vnc_sessions
+  changed_when: false
+  failed_when: false
+  when: start_vnc_server
+
 - name: Launch VNC server for user
   command: /usr/bin/vncserver :1
   become_user: "{{ vnc_user }}"
   become: true
-  args:
-    creates: "/home/{{ vnc_user }}/.vnc/{{ ansible_fqdn }}:1.pid"
-  when: start_vnc_server
+  when:
+    - start_vnc_server
+    - "':1' not in vnc_sessions.stdout"
