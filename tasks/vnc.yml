@@ -54,4 +54,4 @@
   become: true
   when:
     - start_vnc_server
-    - "':1' not in vnc_sessions.stdout"
+    - "'5901' not in vnc_sessions.stdout"
